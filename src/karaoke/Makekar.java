@@ -243,7 +243,7 @@ public class Makekar {
     }
   }
 
-  private static SongAndSinger lyr2txt(byte[] lyrBuffer) throws IOException {
+  public static SongAndSinger lyr2txt(byte[] lyrBuffer) throws IOException {
     Buffer buffer = new Buffer(lyrBuffer);
     byte[] song = buffer.readLine();
     byte[] singer = buffer.readLine();
@@ -317,7 +317,7 @@ public class Makekar {
     }
   }
 
-  private static int getBigEndianWord(byte[] buffer, int offset) {
+  public static int getBigEndianWord(byte[] buffer, int offset) {
     byte ch1 = buffer[offset];
     byte ch2 = buffer[offset + 1];
     int n1 = ((int) ch1) & 0xFF;
@@ -325,7 +325,7 @@ public class Makekar {
     return (n1 << 8) + n2;
   }
 
-  private static int getBigEndianDWord(byte[] buffer, int offset) {
+  public static int getBigEndianDWord(byte[] buffer, int offset) {
     byte ch1 = buffer[offset];
     byte ch2 = buffer[offset + 1];
     byte ch3 = buffer[offset + 2];
