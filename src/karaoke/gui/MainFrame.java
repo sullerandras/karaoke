@@ -1,10 +1,12 @@
 package karaoke.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,21 +14,29 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JTextField;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 
 import karaoke.BetterJFileChooser;
 import karaoke.MetaEvent;
 import karaoke.Midi;
 import karaoke.Player;
+import karaoke.Searcher;
 
 public class MainFrame extends JFrame implements Player.PlayerListener {
   private static final int PAST_LINES = 3;
@@ -45,6 +55,7 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
   private int framesDrawn = 0;
   private long lastFpsTime = 0;
   private int fps = 0;
+  private Popup popup = null;
 
   public MainFrame() throws FileNotFoundException, InvalidMidiDataException, IOException {
     super("Karaoke player");
@@ -54,10 +65,62 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     initComponents();
     setVisible(true);
+    label.grabFocus();
     updateFontSize();
   }
 
   private void initComponents() {
+    getContentPane().setLayout(new BorderLayout(0, 0));
+    JTextField searchField = new JTextField();
+    searchField.setToolTipText("Search to find a song");
+    getContentPane().add(searchField, BorderLayout.NORTH);
+    searchField.addKeyListener(new KeyAdapter() {
+      @Override
+      public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+          if (popup != null) {
+            popup.hide();
+          }
+          label.grabFocus();
+          return;
+        }
+        List<String> results = Searcher.search(searchField.getText());
+        JList<String> jList = new JList<>(new Vector<>(results));
+        jList.addMouseListener(new java.awt.event.MouseAdapter() {
+          @Override
+          public void mouseClicked(java.awt.event.MouseEvent e) {
+            if (e.getClickCount() == 2) {
+              String selected = jList.getSelectedValue();
+              if (selected != null) {
+                popup.hide();
+                playKar(new File(selected));
+                label.grabFocus();
+              }
+            }
+          }
+        });
+        jList.addKeyListener(new KeyAdapter() {
+          @Override
+          public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+              String selected = jList.getSelectedValue();
+              if (selected != null) {
+                popup.hide();
+                playKar(new File(selected));
+                label.grabFocus();
+              }
+            }
+          }
+        });
+        if (popup != null) {
+          popup.hide();
+        }
+        popup = PopupFactory.getSharedInstance().getPopup(MainFrame.this, jList,
+          searchField.getLocationOnScreen().x, searchField.getLocationOnScreen().y + searchField.getHeight());
+        popup.show();
+      }
+    });
+
     label = new JLabel("") {
       @Override
       public void paintComponent(java.awt.Graphics g) {
@@ -86,7 +149,7 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
       }
     });
 
-    getContentPane().add(label);
+    getContentPane().add(label, BorderLayout.CENTER);
     getContentPane().setBackground(Color.BLACK);
 
     JMenuBar mb = new JMenuBar();
@@ -108,6 +171,17 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
       @Override
       public void componentResized(ComponentEvent e) {
         calculateMaxFontSize();
+        if (popup != null) {
+          popup.hide();
+        }
+      }
+    });
+    addWindowFocusListener(new java.awt.event.WindowAdapter() {
+      @Override
+      public void windowLostFocus(WindowEvent e) {
+        if (popup != null) {
+          popup.hide();
+        }
       }
     });
   }
