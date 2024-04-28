@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -196,7 +197,7 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
     }
   }
 
-  public void updateTick(int tick) {
+  public void updateTick(int tick) throws InvocationTargetException, InterruptedException {
     if (type1Events == null) {
       return;
     }
@@ -274,7 +275,7 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
         "</font>" +
         "</body></html>";
 
-    SwingUtilities.invokeLater(() -> {
+    SwingUtilities.invokeAndWait(() -> {
       label.setText(newText);
     });
   }
@@ -310,10 +311,10 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
     new Thread(() -> {
       while (playerIsPlaying) {
         usPosition = player.getUsPosition();
-        updateTick(player.getTick());
         try {
+          updateTick(player.getTick());
           Thread.sleep(10);
-        } catch (InterruptedException ignore) {
+        } catch (Exception ignore) {
           break;
         }
       }
