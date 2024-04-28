@@ -33,10 +33,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import karaoke.BetterJFileChooser;
-import karaoke.MetaEvent;
-import karaoke.Midi;
-import karaoke.Player;
 import karaoke.Searcher;
+import karaoke.midi.MetaEvent;
+import karaoke.midi.Midi;
+import karaoke.midi.Player;
+import karaoke.midi.SoundfontManager;
 
 public class MainFrame extends JFrame implements Player.PlayerListener {
   private static final int PAST_LINES = 3;
@@ -116,7 +117,7 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
           popup.hide();
         }
         popup = PopupFactory.getSharedInstance().getPopup(MainFrame.this, jList,
-          searchField.getLocationOnScreen().x, searchField.getLocationOnScreen().y + searchField.getHeight());
+            searchField.getLocationOnScreen().x, searchField.getLocationOnScreen().y + searchField.getHeight());
         popup.show();
       }
     });
@@ -164,6 +165,34 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
         playKar(fc.getSelectedFile());
       }
     });
+
+    JMenu sountfontMenu = new JMenu("Soundfont");
+    mb.add(sountfontMenu);
+    JMenuItem defaultSountfont = new JMenuItem("Default");
+    sountfontMenu.add(defaultSountfont);
+    defaultSountfont.addActionListener(ev -> {
+      try {
+        SoundfontManager.loadSoundFont(SoundfontManager.DEFAULT_SOUNDFONT);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
+    File[] files = new File(".").listFiles();
+    java.util.Arrays.sort(files, (a, b) -> a.getName().compareTo(b.getName()));
+    for (int i = 0; i < files.length; i++) {
+      File file = files[i];
+      if (file.getName().toLowerCase().endsWith(".sf2")) {
+        JMenuItem sf2Item = new JMenuItem(file.getName());
+        sountfontMenu.add(sf2Item);
+        sf2Item.addActionListener(ev -> {
+          try {
+            SoundfontManager.loadSoundFont(file.getAbsolutePath());
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
+      }
+    }
 
     setJMenuBar(mb);
 

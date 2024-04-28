@@ -1,4 +1,4 @@
-package karaoke;
+package karaoke.midi;
 
 public abstract class MidiEvent {
   private final int deltaTime;

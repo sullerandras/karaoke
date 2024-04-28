@@ -1,4 +1,4 @@
-package karaoke;
+package karaoke.midi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +30,6 @@ public class Player {
   private List<MetaEvent> type1Events;
   private Sequencer sequencer;
   // private double us_per_tick;
-  private static Soundbank soundfont;
 
   public Player() throws FileNotFoundException, InvalidMidiDataException, IOException {
   }
@@ -67,7 +66,6 @@ public class Player {
     // System.out.println("Track #2 events: " + String.join("", type1Events.stream().map(MetaEvent::getDataAsCp874String).toList()).replaceAll("/", "\n"));
 
     // Play once
-    Synthesizer synthesizer = null;
     try {
       // MidiFileFormat midiFileFormat = MidiSystem.getMidiFileFormat(midiFile);
       // System.out.println("======> DivisionType: " + midiFileFormat.getDivisionType());
@@ -76,16 +74,11 @@ public class Player {
       // System.out.println("======> Type: " + midiFileFormat.getType());
 
       sequencer = MidiSystem.getSequencer(false);
-      synthesizer = MidiSystem.getSynthesizer();
 
       sequencer.open();
-      synthesizer.open();
-      if (soundfont != null) {
-        synthesizer.unloadAllInstruments(synthesizer.getDefaultSoundbank());
-        synthesizer.loadAllInstruments(soundfont);
-      }
+      SoundfontManager.synthesizer.open();
 
-      sequencer.getTransmitter().setReceiver(synthesizer.getReceiver());
+      sequencer.getTransmitter().setReceiver(SoundfontManager.synthesizer.getReceiver());
 
       sequencer.setSequence(MidiSystem.getSequence(midiFile));
       // sequencer.setMicrosecondPosition(60 * 1000000);
@@ -120,20 +113,18 @@ public class Player {
 
       // Close the MidiDevice & free resources
       sequencer.stop();
-    } catch (MidiUnavailableException mue) {
-      System.out.println("Midi device unavailable!");
-    } catch (InvalidMidiDataException imde) {
-      System.out.println("Invalid Midi data!");
-    } catch (IOException ioe) {
-      System.out.println("I/O Error!");
+    } catch (MidiUnavailableException e) {
+      e.printStackTrace();
+    } catch (InvalidMidiDataException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     } finally {
       // Close the MidiDevice & free resources
       if (sequencer != null) {
         sequencer.close();
       }
-      if (synthesizer != null) {
-        synthesizer.close();
-      }
+      SoundfontManager.synthesizer.close();
     }
 
     playerListeners.forEach(PlayerListener::playerFinished);
@@ -188,9 +179,5 @@ public class Player {
     }
 
     sequencer.setMicrosecondPosition(sequencer.getMicrosecondPosition() + seconds * 1000000);
-  }
-
-  public static void loadSoundFont(String filename) throws FileNotFoundException, InvalidMidiDataException, IOException {
-    soundfont = MidiSystem.getSoundbank(new FileInputStream(filename));
   }
 }

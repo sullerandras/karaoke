@@ -1,4 +1,4 @@
-package karaoke;
+package karaoke.midi;
 
 import java.nio.charset.Charset;
 

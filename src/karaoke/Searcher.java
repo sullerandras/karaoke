@@ -2,6 +2,7 @@ package karaoke;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,7 +54,7 @@ public class Searcher {
   }
 
   private static List<StringAndLowercaseString> listAllKarFiles() throws IOException {
-    List<StringAndLowercaseString> files = Files.walk(Paths.get("."))
+    List<StringAndLowercaseString> files = Files.walk(Paths.get("."), FileVisitOption.FOLLOW_LINKS)
         .filter(Files::isRegularFile)
         .filter(path -> path.toString().toLowerCase().endsWith(".kar"))
         .map(path -> new StringAndLowercaseString(relativePath(path)))

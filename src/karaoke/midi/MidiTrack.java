@@ -1,4 +1,4 @@
-package karaoke;
+package karaoke.midi;
 
 import java.util.ArrayList;
 import java.util.List;

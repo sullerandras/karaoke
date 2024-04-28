@@ -1,4 +1,4 @@
-package karaoke;
+package karaoke.midi;
 
 public class Buffer {
   private byte[] buffer;

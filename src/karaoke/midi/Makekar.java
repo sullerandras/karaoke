@@ -1,4 +1,4 @@
-package karaoke;
+package karaoke.midi;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
