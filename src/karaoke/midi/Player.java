@@ -39,6 +39,8 @@ public class Player {
   }
 
   public void play(File midiFile) throws IOException {
+    System.out.println("Start playing " + midiFile);
+
     type1Events = null;
     sequencer = null;
 
@@ -178,6 +180,10 @@ public class Player {
       return;
     }
 
-    sequencer.setMicrosecondPosition(sequencer.getMicrosecondPosition() + seconds * 1000000);
+    long newPosition = sequencer.getMicrosecondPosition() + seconds * 1000000;
+    if (newPosition < 0) {
+      newPosition = 0;
+    }
+    sequencer.setMicrosecondPosition(newPosition);
   }
 }
