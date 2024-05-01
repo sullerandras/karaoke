@@ -31,11 +31,9 @@ public class Makekar {
 
     // read number of tracks
     int numTrack = getBigEndianWord(midBuffer, 10);
-    System.out.println("=======> numTrack: " + numTrack);
 
     // read track number 1 data length
     int track1Len = getBigEndianDWord(midBuffer, 18);
-    System.out.println("=======> track1Len: " + track1Len);
 
     // add one more track
     numTrack++;
@@ -50,7 +48,8 @@ public class Makekar {
     int timeBase = resolution / 4;
 
     // Create txt file (Temp.txt) from lyr file
-    SongAndSinger songAndSinger = lyr2txt(lyrBuffer);
+    ByteArrayOutputStream txtTemp = new ByteArrayOutputStream();
+    SongAndSinger songAndSinger = lyr2txt(lyrBuffer, txtTemp);
 
     int songLen = songAndSinger.getSong().length;
     int singerLen = songAndSinger.getSinger().length;
@@ -61,7 +60,7 @@ public class Makekar {
     k = k + 9; // 4 byte + "Words" = 9
 
     // Read cur and txt files into buffers
-    byte[] txtBuffer = readFile("Temp.txt");
+    byte[] txtBuffer = txtTemp.toByteArray();
 
     // write the track2 header 'MTrk'
     kar.write(new byte[] { 0x4D, 0x54, 0x72, 0x6B });
@@ -139,10 +138,8 @@ public class Makekar {
     int track2Len = k;
 
     String hexNumber = String.format("%X", track2Len);
-    System.out.println("=======> hexNumber: " + hexNumber);
 
     int hexLen = hexNumber.length();
-    System.out.println("=======> hexLen: " + hexLen);
 
     int ch4 = 0;
     int ch3 = 0;
@@ -166,7 +163,7 @@ public class Makekar {
 
     // Track name Words
     kar.write(new byte[] { 0x00, (byte) 0xFF, 0x03, 0x05, 0x57, 0x6F, 0x72, 0x64, 0x73 });
-    System.out.println("=======> songLen: " + songLen);
+    // System.out.println("=======> songLen: " + songLen);
     // write song title
     kar.write(new byte[] { 0x00, (byte) 0xFF, 0x01, (byte) (songLen + 2), '@', 'T' });
     kar.write(songAndSinger.getSong());
@@ -243,14 +240,13 @@ public class Makekar {
     }
   }
 
-  public static SongAndSinger lyr2txt(byte[] lyrBuffer) throws IOException {
+  public static SongAndSinger lyr2txt(byte[] lyrBuffer, ByteArrayOutputStream txt) throws IOException {
     Buffer buffer = new Buffer(lyrBuffer);
     byte[] song = buffer.readLine();
     byte[] singer = buffer.readLine();
     buffer.readLine();
     buffer.readLine();
 
-    FileOutputStream txt = new FileOutputStream("Temp.txt");
     try {
       txt.write('/');
 

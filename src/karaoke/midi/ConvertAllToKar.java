@@ -1,5 +1,6 @@
 package karaoke.midi;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -26,7 +27,7 @@ public class ConvertAllToKar {
           String curFileName = changeExtension(midFileName, ".cur").replace("Song/", "Cursor/");
           String lyrFileName = changeExtension(midFileName, ".lyr").replace("Song/", "Lyrics/");
           // Reads the first two line of the *.lyr file to get the song and singer names.
-          SongAndSinger songAndSinger = Makekar.lyr2txt(Files.readAllBytes(Paths.get(lyrFileName)));
+          SongAndSinger songAndSinger = Makekar.lyr2txt(Files.readAllBytes(Paths.get(lyrFileName)), new ByteArrayOutputStream());
           // Calls makeKar() to convert the file to "kar/[singer] - [song].kar".
           String outputFileName = "kar/"
               + new String(songAndSinger.getSinger(), Charset.forName("Cp874"))
