@@ -18,4 +18,8 @@ play3: compile
 	java -cp classes karaoke.midi.MidiPlayer 35074.kar ${SF}
 
 convert: compile
-	java -cp classes karaoke.ConvertAllToKar
+	java -cp classes karaoke.midi.ConvertAllToKar
+
+convertemks: compile
+	mkdir -p emkkar
+	java -cp classes karaoke.midi.ConvertAllEmkToKar
