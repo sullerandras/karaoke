@@ -12,7 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Vector;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.BorderFactory;
@@ -48,7 +47,8 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
   private int framesDrawn = 0;
   private long lastFpsTime = 0;
   private int fps = 0;
-  private Popup popup = null;
+  private JTextField searchField;
+  private SearchPopupManager searchPopupManager;
   private int lastPronouncedTick = 0;
 
   public MainFrame() throws FileNotFoundException, InvalidMidiDataException, IOException {
@@ -65,53 +65,22 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
 
   private void initComponents() {
     getContentPane().setLayout(new BorderLayout(0, 0));
-    JTextField searchField = new JTextField();
+    searchField = new JTextField();
+    searchPopupManager = new SearchPopupManager(this);
+    searchPopupManager.addSelectionListener(selectedFileName -> {
+      label.grabFocus();
+      playKar(new File(selectedFileName));
+    });
     searchField.setToolTipText("Search to find a song");
     getContentPane().add(searchField, BorderLayout.NORTH);
     searchField.addKeyListener(new KeyAdapter() {
       @Override
       public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-          if (popup != null) {
-            popup.hide();
-          }
-          label.grabFocus();
+          searchPopupManager.hideSearchPopup();
           return;
         }
-        List<String> results = Searcher.search(searchField.getText());
-        JList<String> jList = new JList<>(new Vector<>(results));
-        jList.addMouseListener(new java.awt.event.MouseAdapter() {
-          @Override
-          public void mouseClicked(java.awt.event.MouseEvent e) {
-            if (e.getClickCount() == 2) {
-              String selected = jList.getSelectedValue();
-              if (selected != null) {
-                popup.hide();
-                playKar(new File(selected));
-                label.grabFocus();
-              }
-            }
-          }
-        });
-        jList.addKeyListener(new KeyAdapter() {
-          @Override
-          public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-              String selected = jList.getSelectedValue();
-              if (selected != null) {
-                popup.hide();
-                playKar(new File(selected));
-                label.grabFocus();
-              }
-            }
-          }
-        });
-        if (popup != null) {
-          popup.hide();
-        }
-        popup = PopupFactory.getSharedInstance().getPopup(MainFrame.this, jList,
-            searchField.getLocationOnScreen().x, searchField.getLocationOnScreen().y + searchField.getHeight());
-        popup.show();
+        searchPopupManager.updateSearchResults(searchField);
       }
     });
 
@@ -180,17 +149,13 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
       @Override
       public void componentResized(ComponentEvent e) {
         calculateMaxFontSize();
-        if (popup != null) {
-          popup.hide();
-        }
+        searchPopupManager.hideSearchPopup();
       }
     });
     addWindowFocusListener(new java.awt.event.WindowAdapter() {
       @Override
       public void windowLostFocus(WindowEvent e) {
-        if (popup != null) {
-          popup.hide();
-        }
+        searchPopupManager.hideSearchPopup();
       }
     });
   }
