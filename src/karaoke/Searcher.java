@@ -10,17 +10,35 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Searcher {
-  static class StringAndLowercaseString {
-    String original;
-    String lowercase;
+  /**
+   * Represents a karaoke file name and it's search term.
+   * The search term is the lowercase version of the file name, excluding path and
+   * file extension.
+   */
+  static class FileNameSearchTerm {
+    String fileName;
+    String searchTerm;
 
-    public StringAndLowercaseString(String original) {
-      this.original = original;
-      this.lowercase = original.toLowerCase();
+    public FileNameSearchTerm(String original) {
+      this.fileName = original;
+      int lastSlash = original.lastIndexOf('/');
+      if (lastSlash < 0) {
+        lastSlash = original.lastIndexOf('\\');
+      }
+      if (lastSlash < 0) {
+        lastSlash = 0;
+      }
+
+      int lastDot = original.lastIndexOf('.');
+      if (lastDot < 0) {
+        lastDot = original.length();
+      }
+
+      this.searchTerm = original.substring(lastSlash, lastDot).toLowerCase();
     }
   }
 
-  private static List<StringAndLowercaseString> allKarFiles = null;
+  private static List<FileNameSearchTerm> allKarFiles = null;
 
   public static List<String> search(String searchString) {
     try {
@@ -31,18 +49,16 @@ public class Searcher {
       Keywords keywords = new Keywords(searchString);
 
       if (allKarFiles == null) {
-        allKarFiles = listAllKarFiles();
+        allKarFiles = listAllKarFilesWithCache();
       }
+
       List<String> results = allKarFiles.stream()
-          .filter(f -> keywords.matches(f.lowercase))
-          .map(f -> f.original)
-          .sorted()
+          .filter(f -> keywords.matches(f.searchTerm))
+          .map(f -> f.fileName)
+          .limit(50)
           .collect(Collectors.toList());
-      if (results.size() > 50) {
-        return results.subList(0, 50);
-      } else {
-        return results;
-      }
+
+          return results;
     } catch (IOException e) {
       e.printStackTrace();
       return List.of();
@@ -53,11 +69,29 @@ public class Searcher {
     return file.toLowerCase().contains(keywords.toLowerCase());
   }
 
-  private static List<StringAndLowercaseString> listAllKarFiles() throws IOException {
-    List<StringAndLowercaseString> files = Files.walk(Paths.get("."), FileVisitOption.FOLLOW_LINKS)
+  private static List<FileNameSearchTerm> listAllKarFilesWithCache() throws IOException {
+    String cacheFileName = "kars.cache";
+    Path cachePath = Paths.get(cacheFileName);
+    if (Files.exists(cachePath)) {
+      System.out.println("Reading kar files from cache");
+      return Files.lines(cachePath)
+          .sorted()
+          .map(FileNameSearchTerm::new)
+          .collect(Collectors.toList());
+    } else {
+      System.out.println("Listing kar files and writing cache");
+      List<FileNameSearchTerm> files = listAllKarFiles();
+      Files.write(cachePath, files.stream().map(f -> f.fileName).collect(Collectors.toList()));
+      return files;
+    }
+  }
+
+  private static List<FileNameSearchTerm> listAllKarFiles() throws IOException {
+    List<FileNameSearchTerm> files = Files.walk(Paths.get("."), FileVisitOption.FOLLOW_LINKS)
         .filter(Files::isRegularFile)
         .filter(path -> path.toString().toLowerCase().endsWith(".kar"))
-        .map(path -> new StringAndLowercaseString(relativePath(path)))
+        .sorted()
+        .map(path -> new FileNameSearchTerm(relativePath(path)))
         .collect(Collectors.toList());
 
     return files;
