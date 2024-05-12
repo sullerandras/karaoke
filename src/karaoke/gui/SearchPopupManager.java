@@ -9,6 +9,7 @@ import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
+import javax.swing.SwingUtilities;
 
 import karaoke.Searcher;
 
@@ -20,6 +21,7 @@ public class SearchPopupManager {
   private Popup searchPopup = null;
   private JList<String> searchPopupResults;
   private SearchPopupListModel searchPopupModel;
+  private Thread searchThread;
 
   private List<SelectionListener> selectionListeners = new java.util.ArrayList<>();
 
@@ -42,39 +44,55 @@ public class SearchPopupManager {
 
   /**
    * Updates the search results based on the search field text.
-   * @param searchField The search field. We need this so we can position the search popup correctly.
+   * 
+   * @param searchField The search field. We need this so we can position the
+   *                    search popup correctly.
    */
   public void updateSearchResults(JTextField searchField) {
-    List<String> results = Searcher.search(searchField.getText());
-    if (searchPopupResults == null) {
-      searchPopupResults = new JList<>();
-      searchPopupModel = new SearchPopupListModel();
-      searchPopupResults.setModel(searchPopupModel);
-      searchPopupResults.addMouseListener(new java.awt.event.MouseAdapter() {
-        @Override
-        public void mouseClicked(java.awt.event.MouseEvent e) {
-          if (e.getClickCount() == 2) {
-            notifyListenersAboutSelection();
-          }
-        }
-      });
-      searchPopupResults.addKeyListener(new KeyAdapter() {
-        @Override
-        public void keyPressed(KeyEvent e) {
-          if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            notifyListenersAboutSelection();
-          }
-        }
-      });
+    if (searchThread != null) {
+      searchThread.interrupt();
+      searchThread = null;
     }
-    searchPopupModel.setResults(results);
-    Popup newSearchPopup = PopupFactory.getSharedInstance().getPopup(parentWindow, searchPopupResults,
-        searchField.getLocationOnScreen().x, searchField.getLocationOnScreen().y + searchField.getHeight());
-    newSearchPopup.show();
-    if (searchPopup != null) {
-      searchPopup.hide();
-    }
-    searchPopup = newSearchPopup;
+    searchThread = new Thread(() -> {
+      final List<String> results;
+      try {
+        results = Searcher.search(searchField.getText());
+      } catch (RuntimeException e) {
+        return;
+      }
+      SwingUtilities.invokeLater(() -> {
+        if (searchPopupResults == null) {
+          searchPopupResults = new JList<>();
+          searchPopupModel = new SearchPopupListModel();
+          searchPopupResults.setModel(searchPopupModel);
+          searchPopupResults.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+              if (e.getClickCount() == 2) {
+                notifyListenersAboutSelection();
+              }
+            }
+          });
+          searchPopupResults.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+              if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                notifyListenersAboutSelection();
+              }
+            }
+          });
+        }
+        searchPopupModel.setResults(results);
+        Popup newSearchPopup = PopupFactory.getSharedInstance().getPopup(parentWindow, searchPopupResults,
+            searchField.getLocationOnScreen().x, searchField.getLocationOnScreen().y + searchField.getHeight());
+        newSearchPopup.show();
+        if (searchPopup != null) {
+          searchPopup.hide();
+        }
+        searchPopup = newSearchPopup;
+      });
+    });
+    searchThread.start();
   }
 
   /**
@@ -105,7 +123,8 @@ public class SearchPopupManager {
   /**
    * Represents a selection listener.
    * Listeners will be notified when the user selects a search result.
-   * The only parameter is the selected search result which should never ne `null`.
+   * The only parameter is the selected search result which should never ne
+   * `null`.
    */
   public interface SelectionListener {
     public void selectionChanged(String selectedFileName);

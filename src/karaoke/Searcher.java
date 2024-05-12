@@ -39,6 +39,7 @@ public class Searcher {
   }
 
   private static List<FileNameSearchTerm> allKarFiles = null;
+  private static Object allKarFilesLock = new Object();
 
   public static List<String> search(String searchString) {
     try {
@@ -48,8 +49,10 @@ public class Searcher {
 
       Keywords keywords = new Keywords(searchString);
 
-      if (allKarFiles == null) {
-        allKarFiles = listAllKarFilesWithCache();
+      synchronized (allKarFilesLock) {
+        if (allKarFiles == null) {
+          allKarFiles = listAllKarFilesWithCache();
+        }
       }
 
       List<String> results = allKarFiles.stream()
@@ -58,7 +61,7 @@ public class Searcher {
           .limit(50)
           .collect(Collectors.toList());
 
-          return results;
+      return results;
     } catch (IOException e) {
       e.printStackTrace();
       return List.of();

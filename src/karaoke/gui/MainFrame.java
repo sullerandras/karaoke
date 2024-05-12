@@ -78,6 +78,7 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
       public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
           searchPopupManager.hideSearchPopup();
+          label.grabFocus();
           return;
         }
         searchPopupManager.updateSearchResults(searchField);
