@@ -144,6 +144,10 @@ public class Lyrics {
    * @return a pair of strings where the first string is the first part of the line and the second string is the second part of the line.
    */
   public PairOfStrings getLineSplitAtTick(int index, int tick) {
+    if (index >= metaEventsForLines.size()) {
+      return new PairOfStrings("", "");
+    }
+
     List<MetaEvent> metaEvents = metaEventsForLines.get(index);
     StringBuilder first = new StringBuilder();
     int endIndex = 0;
