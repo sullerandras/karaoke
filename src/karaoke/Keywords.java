@@ -21,7 +21,7 @@ public class Keywords {
   private String[] keywords;
 
   public Keywords(String searchString) {
-    this.keywords = searchString.strip().toLowerCase().split("\\s+");
+    this.keywords = searchString.trim().toLowerCase().split("\\s+");
   }
 
   public boolean matches(String text) {

@@ -1,2 +1,6 @@
-kar/
-emkkar/
+kar
+emkkar
+classes/
+build/
+# Ignore all files in the root of the project
+/*.*

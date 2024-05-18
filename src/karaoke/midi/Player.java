@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MetaEventListener;
@@ -78,7 +79,7 @@ public class Player {
     // System.out.println("seconds_per_tick: " + seconds_per_tick);
     // seconds = ticks * seconds_per_tick
     type1Events = midi.getTrack(1).getType1Events().stream()
-        .filter(event -> event.getAbsoluteTime() > 0).toList();
+        .filter(event -> event.getAbsoluteTime() > 0).collect(Collectors.toList());
     // System.out.println("Track #2 events: " + String.join("", type1Events.stream().map(MetaEvent::getDataAsCp874String).toList()).replaceAll("/", "\n"));
 
     // Play once

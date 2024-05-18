@@ -29,6 +29,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.BorderFactory;
@@ -187,7 +189,7 @@ public class MainFrame extends JFrame implements Player.PlayerListener {
 
       Midi midi = new Midi(karFile.getAbsolutePath());
       setType1Events(midi.getTrack(1).getType1Events().stream()
-          .filter(event -> event.getAbsoluteTime() > 0).toList());
+          .filter(event -> event.getAbsoluteTime() > 0).collect(Collectors.toList()));
 
       // System.out.println("Track #2 events: "
       //     + String.join("", type1Events.stream().map(MetaEvent::getDataAsCp874String).toList()).replaceAll("/", "\n"));
