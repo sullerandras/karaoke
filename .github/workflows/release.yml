@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - add-github-actions-release
+      - master
 
 jobs:
   build-and-create-release:
