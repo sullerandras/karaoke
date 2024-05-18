@@ -1,5 +1,7 @@
 kar/
 emkkar/
+classes/
+build/
 *.sf2
 *.kar
 *.emk

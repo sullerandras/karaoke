@@ -65,6 +65,6 @@ public class ConvertAllEmkToKar {
   }
 
   public static String sanitizeFileName(String fileName) {
-    return fileName.strip().replaceAll("[.\\/]", "_");
+    return fileName.trim().replaceAll("[.\\/]", "_");
   }
 }

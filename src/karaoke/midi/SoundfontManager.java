@@ -17,6 +17,7 @@
  */
 package karaoke.midi;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -59,7 +60,7 @@ public class SoundfontManager {
       usingDefaultSoundfont = true;
       synthesizer.loadAllInstruments(synthesizer.getDefaultSoundbank());
     } else {
-      soundfont = MidiSystem.getSoundbank(new FileInputStream(soundfontFile));
+      soundfont = MidiSystem.getSoundbank(new BufferedInputStream(new FileInputStream(soundfontFile)));
       if (soundfont != null) {
         synthesizer.loadAllInstruments(soundfont);
       }
