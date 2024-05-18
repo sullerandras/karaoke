@@ -29,6 +29,6 @@ build: compile
 	rm -rf karaoke.jar
 	mkdir build
 	cp -r classes/* build
-	cp -r src/* build
+	cp -r src build
 	cp LICENSE build
 	jar -cfe karaoke.jar karaoke.Main -C build .
