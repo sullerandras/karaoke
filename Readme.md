@@ -66,3 +66,10 @@ It is a compressed file format containing a MIDI file, a lyrics file and and a t
 3. Create a pull request.
 
 Note that all derivative work of this software must use the GPLv1 license.
+
+## How to make it sound better?
+
+The midi player in java comes with some basic sounds. If you don't like it, then you can use your own Soundfont files!
+
+The app will add all `*.sf2` files from the current folder to the "Soundfont" menu, and you can select a different Soundfont any time (even during playing a song).
+The app remembers the last selected Soundfont file and automatically loads it when the app starts.
