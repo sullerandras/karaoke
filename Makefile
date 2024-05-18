@@ -23,3 +23,12 @@ convert: compile
 convertemks: compile
 	mkdir -p emkkar
 	java -cp classes karaoke.midi.ConvertAllEmkToKar
+
+build: compile
+	rm -rf build
+	rm -rf karaoke.jar
+	mkdir build
+	cp -r classes/* build
+	cp -r src/* build
+	cp LICENSE build
+	jar -cfe karaoke.jar karaoke.Main -C build .
